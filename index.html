@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una cartita para ti</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fff4f8, #ffffff, #eaf7fd);
+    color: #76576a;
+    font-family: Georgia, serif;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+}
+
+.screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+}
+
+.panel {
+    width: min(900px, 100%);
+    background: #ffffffdf;
+    border-radius: 28px;
+    padding: 35px;
+    box-shadow: 0 18px 55px #dbaac033;
+    text-align: center;
+}
+
+h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: normal;
+}
+
+h2 {
+    font-weight: normal;
+}
+
+p {
+    font-size: 17px;
+    line-height: 1.9;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.kicker {
+    font: 11px Arial;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #b27e99;
+}
+
+.primary {
+    background: linear-gradient(120deg, #f3b1cb, #b9deef);
+    color: white;
+    border-radius: 30px;
+    padding: 14px 25px;
+    transition: .3s;
+}
+
+.primary:hover {
+    transform: translateY(-3px);
+}
+
+.envelope {
+    font-size: 80px;
+    margin: 25px;
+    cursor: pointer;
+    animation: float 2.5s infinite;
+}
+
+@keyframes float {
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* TARJETAS */
+
+.card-wrap {
+    width: min(950px, 100%);
+}
+
+.story-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background: white;
+    border-radius: 25px;
+    padding: 20px;
+    box-shadow: 0 15px 45px #dbaac033;
+    animation: appear .5s ease;
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.story-copy {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.story-copy p {
+    min-height: 150px;
+    white-space: pre-line;
+}
+
+.story-image {
+    min-height: 330px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #fde5ee, #e5f4fc);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-image img {
+    width: 100%;
+    height: 100%;
+    min-height: 330px;
+    object-fit: cover;
+}
+
+.type-caret::after {
+    content: "";
+    border-right: 2px solid #bd8da5;
+    animation: blink .8s infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.navbtn {
+    background: #e8f5fb;
+    color: #64869a;
+    padding: 12px 22px;
+    border-radius: 30px;
+}
+
+.navbtn:disabled {
+    opacity: .35;
+}
+
+.progress {
+    font: 12px Arial;
+    color: #b1849a;
+}
+
+/* PREGUNTA Y CASILLA DE RESPUESTA */
+
+.final-question {
+    font-size: clamp(2rem, 6vw, 3.3rem);
+}
+
+.custom-answer-area {
+    margin: 25px auto;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.response-textarea {
+    width: 100%;
+    height: 140px;
+    padding: 15px;
+    border: 2px solid #f1d5e2;
+    border-radius: 18px;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: #76576a;
+    background-color: #fffafc;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.response-textarea:focus {
+    border-color: #f2abc6;
+}
+
+.result-gif {
+    width: 250px;
+    max-width: 80%;
+    display: block;
+    margin: 20px auto;
+    border-radius: 18px;
+}
+
+.music {
+    position: fixed;
+    right: 15px;
+    top: 15px;
+    background: white;
+    border: 1px solid #f1d5e2;
+    border-radius: 25px;
+    padding: 10px 15px;
+    color: #936b80;
+    z-index: 10;
+}
+
+@media(max-width:680px) {
+    .story-card {
+        grid-template-columns: 1fr;
+    }
+
+    .story-image {
+        min-height: 230px;
+    }
+
+    .story-image img {
+        min-height: 230px;
+    }
+}
+</style>
+</head>
+<body>
+
+<button class="music" id="musicBtn">
+Música
+</button>
+
+<audio id="music" loop>
+    <source src="tu.mp3" type="audio/mpeg">
+</audio>
+
+<section class="screen" id="welcome">
+<div class="panel">
+
+<div class="kicker">Una sorpresa para ti</div>
+
+<div class="envelope" id="envelope">✉</div>
+
+<h1>Hice algo para ti</h1>
+
+<p>
+Quiero contarte algo de una manera diferente.
+Cuando estés lista, abre mi cartita.
+</p>
+
+<button class="primary" id="begin">
+Abrir la primera tarjeta
+</button>
+
+</div>
+</section>
+
+<section class="screen hidden" id="story">
+<div class="card-wrap">
+
+<div class="kicker" style="text-align:center;margin-bottom:15px">
+</div>
+
+<div class="story-card">
+
+<div class="story-copy">
+
+<div class="kicker" id="cardLabel"></div>
+
+<h2 id="cardTitle"></h2>
+
+<p id="typedText"></p>
+
+</div>
+
+<div class="story-image">
+
+<img id="cardImage" class="hidden" alt="Fotografía">
+
+<div id="imagePlaceholder">
+Aquí aparecerá una fotografía especial.
+</div>
+
+</div>
+</div>
+
+<div class="controls">
+
+<button class="navbtn" id="prev">Anterior</button>
+
+<span class="progress" id="progress"></span>
+
+<button class="primary" id="next">Siguiente</button>
+
+</div>
+</div>
+</section>
+
+<section class="screen hidden" id="question">
+
+<div class="panel">
+
+<div class="kicker">Hay algo más que quiero decirte</div>
+
+<h1 class="final-question">
+Tengo algo muy importante que preguntarte...
+</h1>
+
+<p>¿Puedo ser tu novia?</p>
+
+<div class="custom-answer-area">
+    <textarea id="userResponseText" class="response-textarea" placeholder="Escribe aquí lo que sientes..."></textarea>
+    <button class="primary" id="sendCustomBtn">Enviar respuesta</button>
+</div>
+
+</div>
+</section>
+
+<section class="screen hidden" id="result">
+
+<div class="panel">
+
+<div class="kicker">Tu respuesta</div>
+
+<h1 id="resultTitle"></h1>
+
+<img id="catGif" class="result-gif" alt="Gatito" src="https://media.tenor.com/7G9s5.gif">
+
+<p id="resultText"></p>
+
+<p id="mailStatus"></p>
+
+</div>
+</section>
+
+<script>
+
+const cards = [
+{
+title: "Lo mucho que me gustas.",
+text: "No sé si te lo digo lo suficiente, pero me gustas demasiado. Me encantas de una manera que a veces ni yo misma sé explicar. Eres una persona tan linda, tan gentil y tan especial que podría pasar horas hablando de todas las cosas que me gustan de ti. Hay algo en tu forma de ser que me hace querer conocerte cada día un poquito más. Y créeme, no me canso de ti.",
+image: "pp1.jpg"
+},
+
+{
+text: "Me encanta que te burles de mí, que me molestes y que encuentres cualquier oportunidad para exponerme. Y aunque a veces no sepa ni cómo defenderme de ti, no me importa, porque hasta esas pequeñas cosas tuyas me hacen feliz. Me encanta poder reírme contigo, incluso cuando soy yo el motivo de tus burlas. No cambiaría esas pequeñas locuras por nada.",
+image: "zs1.jpg"
+},
+
+{
+title: "Quiero conocer tu manera de amar.",
+text: "Quiero que conmigo puedas demostrar tu amor sin miedo, que seas cariñosa, que me cele, que me busques, que me molestes, que me hagas saber cuándo me extrañas y que no tengas que esconder ninguna parte de lo que sientes. No voy a juzgar tu manera de amar, porque quiero aprender a entenderla y corresponderla. No quiero que sientas que tienes que quererme de una forma determinada para hacerme feliz.",
+image: "pp2.jpg"
+},
+
+{
+title: "Cada parte de ti",
+text: "Quiero amar cada parte de ti: tus días buenos, tus días difíciles, tus ocurrencias, tus enojos, tus inseguridades, tus silencios y hasta esas pequeñas manías que te hacen ser tú. No quiero conocer solamente tu lado bonito y sencillo de querer. También quiero estar cuando las cosas no sean tan fáciles. No tienes que ser perfecta conmigo, porque no es la perfección lo que me enamora de ti.",
+image: "zs2.jpg"
+},
+
+{
+title: "Mi cariño por ti.",
+text: "Te amo muchísimo, más de lo que probablemente consigo demostrarte con palabras. A veces quisiera poder meter todos mis sentimientos en una cajita y entregártela para que entiendas cuánto significas para mí. Me haces sentir cosas muy bonitas y me emociona pensar en todos los momentos que todavía podríamos compartir.",
+image: "pp3.jpg"
+},
+{
+title: "Siempre tendrás un lugar conmigo.",
+text: "Quiero que sepas que puedes contar conmigo. Quiero escucharte cuando necesites hablar, acompañarte cuando tengas un mal día, celebrar tus logros y recordarte lo maravillosa que eres cuando tú misma lo olvides. No quiero estar solamente cuando todo sea bonito; también quiero ser alguien con quien puedas sentirte segura, tranquila y querida.",
+image: "zs3.jpg"
+},
+{
+text: "No te prometo que todo será perfecto, porque sé que somos personas con sentimientos, diferencias y días complicados. Pero sí quiero prometerte que voy a intentar comprenderte, escucharte, respetarte y cuidar lo que podamos construir juntas. Quiero que podamos ser nosotras mismas, reírnos de cualquier tontería, molestarnos, consentirnos y demostarnos cuánto nos queremos.",
+image: "pp4.jpg"
+},
+{
+title: "Y ahora si........",
+text: "Si llegaste hasta aquí, quiero que sepas que cada palabra la escribí pensando en ti. No sé qué nos espera más adelante, pero sé que me gustaría descubrirlo a tu lado. Me gustas, me encantas y te amo muchísimo. Y si me das la oportunidad, quiero demostrarte todo eso no solamente con palabras, sino también con mis acciones. Porque, entre tantas personas, eres tú a quien quiero darle todo este cariño. Y ahora tengo algo muy importante que preguntarte...",
+image: "zs4.jpg"
+}
+];
+
+let index = 0;
+let typingTimer;
+
+const $ = id => document.getElementById(id);
+
+function show(id) {
+    ["welcome", "story", "question", "result"].forEach(section => {
+        $(section).classList.toggle(
+            "hidden",
+            section !== id
+        );
+    });
+    window.scrollTo(0, 0);
+}
+
+function typeText(text) {
+    clearInterval(typingTimer);
+    const target = $("typedText");
+    target.textContent = "";
+    target.classList.add("type-caret");
+    let i = 0;
+
+    typingTimer = setInterval(() => {
+        target.textContent += text.charAt(i);
+        i++;
+        if (i >= text.length) {
+            clearInterval(typingTimer);
+            target.classList.remove("type-caret");
+        }
+    }, 35);
+}
+
+function renderCard() {
+    const card = cards[index];
+
+    $("cardLabel").textContent = "Tarjeta " + (index + 1);
+    $("cardTitle").textContent = card.title ? card.title : "";
+
+    typeText(card.text);
+
+    $("progress").textContent = (index + 1) + " / " + cards.length;
+    $("prev").disabled = index === 0;
+    $("next").textContent = index === cards.length - 1 ? "Terminar la carta" : "Siguiente";
+
+    const imgElement = $("cardImage");
+    const placeholderElement = $("imagePlaceholder");
+
+    if (card.image) {
+        imgElement.onload = () => {
+            imgElement.classList.remove("hidden");
+            placeholderElement.classList.add("hidden");
+        };
+
+        imgElement.onerror = () => {
+            imgElement.classList.add("hidden");
+            placeholderElement.classList.remove("hidden");
+        };
+
+        imgElement.src = card.image;
+    } else {
+        imgElement.classList.add("hidden");
+        placeholderElement.classList.remove("hidden");
+        imgElement.removeAttribute("src");
+    }
+}
+
+function start() {
+    show("story");
+    renderCard();
+    playMusic();
+}
+
+$("begin").onclick = start;
+$("envelope").onclick = start;
+
+$("prev").onclick = () => {
+    if (index > 0) {
+        index--;
+        renderCard();
+    }
+};
+
+$("next").onclick = () => {
+    if (index < cards.length - 1) {
+        index++;
+        renderCard();
+    } else {
+        show("question");
+    }
+};
+
+const music = $("music");
+const musicBtn = $("musicBtn");
+
+async function playMusic() {
+    try {
+        await music.play();
+        musicBtn.textContent = "Música: pausar";
+    } catch (error) {
+        musicBtn.textContent = "Música: toca para reproducir";
+    }
+}
+
+musicBtn.onclick = () => {
+    if (music.paused) {
+        playMusic();
+    } else {
+        music.pause();
+        musicBtn.textContent = "Música: reproducir";
+    }
+};
+
+$("sendCustomBtn").onclick = () => {
+    const textResponse = $("userResponseText").value.trim();
+    if (!textResponse) {
+        alert("Por favor escribe un mensaje antes de enviar.");
+        return;
+    }
+    sendAnswer(textResponse);
+};
+
+async function sendAnswer(userMessage) {
+    show("result");
+
+    $("resultTitle").textContent = "¡Gracias por tus palabras!";
+    $("resultText").textContent = "Tu mensaje ha sido enviado. Valoro muchísimo que me hayas compartido lo que sientes.";
+    $("mailStatus").textContent = "Enviando tu respuesta...";
+
+    try {
+        const response = await fetch(
+            "https://formsubmit.co/ajax/ocampomari109@gmail.com",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    Respuesta: userMessage,
+                    Mensaje: "Ella te ha dejado esta respuesta: " + userMessage,
+                    _subject: "Tienes una respuesta escrita a tu carta",
+                    _captcha: "false"
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Error al enviar");
+        }
+
+        $("mailStatus").textContent = "Respuesta enviada correctamente. Si es la primera vez, confirma tu correo en FormSubmit.";
+    } catch (error) {
+        $("mailStatus").textContent = "No se pudo enviar. Comprueba tu conexión e inténtalo nuevamente.";
+    }
+}
+
+</script>
+
+</body>
+</html>
